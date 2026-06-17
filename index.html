@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#1a56db" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>MoneyFlow Manager</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.0.0/dist/tabler-icons.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</head>
+<body data-theme="light">
+
+  <!-- ==================== APP SHELL ==================== -->
+  <div class="app" id="app">
+
+    <!-- TOP BAR (injected per screen by JS) -->
+    <header class="topbar" id="topbar">
+      <div class="topbar-left">
+        <div class="greeting" id="topbar-greeting">Good morning 👋</div>
+        <h1 class="topbar-title" id="topbar-title">MoneyFlow Manager</h1>
+      </div>
+      <div class="topbar-right">
+        <button class="icon-btn" id="notif-btn" aria-label="Notifications">
+          <i class="ti ti-bell"></i>
+          <span class="notif-dot"></span>
+        </button>
+        <button class="icon-btn" id="theme-toggle" aria-label="Toggle dark mode">
+          <i class="ti ti-moon" id="theme-icon"></i>
+        </button>
+      </div>
+    </header>
+
+    <!-- ==================== SCREENS ==================== -->
+
+    <!-- DASHBOARD -->
+    <section id="screen-dashboard" class="screen active" aria-label="Dashboard">
+      <div class="scroll-area">
+
+        <!-- Balance Hero -->
+        <div class="balance-hero">
+          <div class="balance-label">Total Balance</div>
+          <div class="balance-amount">₹1,24,850</div>
+          <div class="balance-sub">
+            <span class="balance-tag pos"><i class="ti ti-trending-up"></i> +₹35,550 this month</span>
+          </div>
+        </div>
+
+        <!-- Metric Grid -->
+        <div class="metric-grid">
+          <div class="metric">
+            <div class="metric-icon green"><i class="ti ti-arrow-up"></i></div>
+            <div class="metric-label">Income</div>
+            <div class="metric-value green">₹68,000</div>
+          </div>
+          <div class="metric">
+            <div class="metric-icon red"><i class="ti ti-arrow-down"></i></div>
+            <div class="metric-label">Expenses</div>
+            <div class="metric-value red">₹32,450</div>
+          </div>
+          <div class="metric">
+            <div class="metric-icon blue"><i class="ti ti-users"></i></div>
+            <div class="metric-label">Active Chits</div>
+            <div class="metric-value blue">4</div>
+          </div>
+          <div class="metric">
+            <div class="metric-icon amber"><i class="ti ti-refresh"></i></div>
+            <div class="metric-label">Renewals Due</div>
+            <div class="metric-value amber">3</div>
+          </div>
+        </div>
+
+        <!-- Cash Flow Chart -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title"><i class="ti ti-chart-line"></i> Monthly Cash Flow</span>
+            <div class="legend-row">
+              <span class="legend-item"><span class="legend-dot" style="background:#1a56db"></span>Income</span>
+              <span class="legend-item"><span class="legend-dot" style="background:#c81e1e"></span>Expenses</span>
+            </div>
+          </div>
+          <div class="chart-wrap" style="height:180px">
+            <canvas id="cashflowChart" role="img" aria-label="Monthly income vs expenses for Jan–Jun 2026">Income and expense line chart over 6 months.</canvas>
+          </div>
+        </div>
+
+        <!-- Expense Donut -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title"><i class="ti ti-chart-donut"></i> Expense Breakdown</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:16px">
+            <div class="chart-wrap" style="height:140px;flex:0 0 140px">
+              <canvas id="donutChart" role="img" aria-label="Expense categories donut chart">Expense categories breakdown.</canvas>
+            </div>
+            <div class="donut-legend" id="donut-legend"></div>
+          </div>
+        </div>
+
+        <!-- Upcoming Payments -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title"><i class="ti ti-clock"></i> Upcoming Payments</span>
+            <button class="link-btn" onclick="switchScreen('recharge')">See all</button>
+          </div>
+          <div id="upcoming-list"></div>
+        </div>
+
+        <!-- AI Insight -->
+        <div class="insight-card">
+          <div class="insight-header"><i class="ti ti-sparkles"></i> AI Insight</div>
+          <p class="insight-text">You saved <strong>52%</strong> of income this month — up from 38% last month. Your Office Chit could yield ₹6,200 profit if taken in Month 8. Subscriptions rose 12% vs last month.</p>
+        </div>
+
+        <!-- Chit Fund Snapshot -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title"><i class="ti ti-coin"></i> Chit Fund Snapshot</span>
+            <button class="link-btn" onclick="switchScreen('chits')">Manage</button>
+          </div>
+          <div id="chit-snapshot"></div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- RECHARGE & SUBSCRIPTIONS -->
+    <section id="screen-recharge" class="screen" aria-label="Recharge and Subscriptions">
+      <div class="scroll-area">
+        <div class="chip-bar" id="recharge-chips">
+          <button class="chip active" data-filter="all">All</button>
+          <button class="chip" data-filter="mobile">Mobile</button>
+          <button class="chip" data-filter="broadband">Broadband</button>
+          <button class="chip" data-filter="ott">OTT</button>
+          <button class="chip" data-filter="other">Other</button>
+        </div>
+        <div class="section-label">Mobile Recharges</div>
+        <div id="mobile-list"></div>
+        <div class="section-label">Broadband</div>
+        <div id="broadband-list"></div>
+        <div class="section-label">Subscriptions & OTT</div>
+        <div id="ott-list"></div>
+        <div class="monthly-total card">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <span style="font-size:14px;color:var(--text-secondary)">Total monthly recurring</span>
+            <span style="font-size:18px;font-weight:600;color:var(--red)">₹5,264</span>
+          </div>
+        </div>
+      </div>
+      <button class="fab" id="fab-recharge" aria-label="Add recharge"><i class="ti ti-plus"></i></button>
+    </section>
+
+    <!-- CHIT FUNDS -->
+    <section id="screen-chits" class="screen" aria-label="Chit Funds">
+      <div class="scroll-area">
+        <div class="metric-grid">
+          <div class="metric">
+            <div class="metric-label">Total Committed</div>
+            <div class="metric-value blue">₹8,00,000</div>
+          </div>
+          <div class="metric">
+            <div class="metric-label">Total Paid</div>
+            <div class="metric-value">₹1,52,000</div>
+          </div>
+          <div class="metric">
+            <div class="metric-label">Dividends</div>
+            <div class="metric-value green">₹12,450</div>
+          </div>
+          <div class="metric">
+            <div class="metric-label">Est. Profit</div>
+            <div class="metric-value green">₹28,700</div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title"><i class="ti ti-chart-bar"></i> Chit Performance</span>
+          </div>
+          <div class="chart-wrap" style="height:160px">
+            <canvas id="chitChart" role="img" aria-label="Chit fund profit comparison bar chart">Chit fund estimated profits comparison.</canvas>
+          </div>
+        </div>
+        <div class="section-label">Active Chit Funds</div>
+        <div id="chit-list"></div>
+      </div>
+      <button class="fab" id="fab-chit" aria-label="Add chit fund"><i class="ti ti-plus"></i></button>
+    </section>
+
+    <!-- EXPENSES & INCOME -->
+    <section id="screen-expenses" class="screen" aria-label="Expenses and Income">
+      <div class="scroll-area">
+        <div class="chip-bar" id="expense-chips">
+          <button class="chip active" data-filter="all">All</button>
+          <button class="chip" data-filter="income">Income</button>
+          <button class="chip" data-filter="expense">Expense</button>
+          <button class="chip" data-filter="jun">Jun 2026</button>
+        </div>
+        <div class="metric-grid" style="grid-template-columns:1fr 1fr">
+          <div class="metric">
+            <div class="metric-label">Income</div>
+            <div class="metric-value green">₹68,000</div>
+          </div>
+          <div class="metric">
+            <div class="metric-label">Expenses</div>
+            <div class="metric-value red">₹32,450</div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title"><i class="ti ti-chart-bar"></i> Category Breakdown</span>
+          </div>
+          <div id="category-breakdown"></div>
+        </div>
+        <div class="section-label">Recent Transactions</div>
+        <div class="card" style="padding:0" id="txn-list"></div>
+      </div>
+      <button class="fab" id="fab-expense" aria-label="Add transaction"><i class="ti ti-plus"></i></button>
+    </section>
+
+    <!-- REPORTS -->
+    <section id="screen-reports" class="screen" aria-label="Reports and Insights">
+      <div class="scroll-area">
+        <div class="chip-bar" id="report-chips">
+          <button class="chip active">Monthly</button>
+          <button class="chip">Quarterly</button>
+          <button class="chip">Yearly</button>
+        </div>
+
+        <div class="insight-card" style="background:linear-gradient(135deg,#EBF5FB,#EAF3DE)">
+          <div class="insight-header"><i class="ti ti-sparkles"></i> AI Summary — June 2026</div>
+          <p class="insight-text">All 3 active chit funds are in profit. Office Chit bid in Month 8 could maximize returns by ₹6,200. Subscription spend rose 12% — Netflix and Spotify account for most of it. Your savings rate of 52% is the highest in 6 months.</p>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><span class="card-title"><i class="ti ti-coin"></i> Chit Fund Summary</span></div>
+          <div id="report-chit"></div>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><span class="card-title"><i class="ti ti-chart-line"></i> Profit / Loss Forecast</span></div>
+          <div class="chart-wrap" style="height:160px">
+            <canvas id="forecastChart" role="img" aria-label="Profit loss forecast over 12 months">Profit and loss forecast chart.</canvas>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><span class="card-title"><i class="ti ti-repeat"></i> Subscriptions — Monthly</span></div>
+          <div id="report-subs"></div>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><span class="card-title"><i class="ti ti-download"></i> Export Reports</span></div>
+          <div class="export-btns">
+            <button class="btn btn-outline" onclick="exportReport('pdf')"><i class="ti ti-file-type-pdf"></i> Export PDF</button>
+            <button class="btn btn-outline" onclick="exportReport('excel')"><i class="ti ti-file-spreadsheet"></i> Export Excel</button>
+            <button class="btn btn-outline" onclick="exportReport('csv')"><i class="ti ti-file-text"></i> Export CSV</button>
+            <button class="btn btn-outline" onclick="exportReport('json')"><i class="ti ti-database-export"></i> Backup JSON</button>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- BOTTOM NAVIGATION -->
+    <nav class="bottom-nav" role="navigation" aria-label="Main navigation">
+      <button class="nav-item active" data-screen="dashboard" aria-label="Dashboard">
+        <i class="ti ti-layout-dashboard"></i>
+        <span>Dashboard</span>
+      </button>
+      <button class="nav-item" data-screen="recharge" aria-label="Recharge">
+        <i class="ti ti-device-mobile"></i>
+        <span>Recharge</span>
+      </button>
+      <button class="nav-item" data-screen="chits" aria-label="Chit Funds">
+        <i class="ti ti-users"></i>
+        <span>Chits</span>
+      </button>
+      <button class="nav-item" data-screen="expenses" aria-label="Expenses">
+        <i class="ti ti-wallet"></i>
+        <span>Expenses</span>
+      </button>
+      <button class="nav-item" data-screen="reports" aria-label="Reports">
+        <i class="ti ti-chart-bar"></i>
+        <span>Reports</span>
+      </button>
+    </nav>
+
+  </div><!-- /.app -->
+
+  <!-- ==================== MODALS ==================== -->
+
+  <!-- Add Recharge Modal -->
+  <div class="modal-overlay" id="modal-add-recharge" role="dialog" aria-modal="true" aria-label="Add recharge">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <h2 class="modal-title">Add Recharge / Subscription</h2>
+      <form id="form-recharge" novalidate>
+        <div class="form-group">
+          <label class="form-label">Type</label>
+          <select class="form-input" id="r-type">
+            <option value="mobile">Mobile Recharge</option>
+            <option value="broadband">Broadband</option>
+            <option value="ott">OTT / Streaming</option>
+            <option value="other">Other Subscription</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Name</label>
+            <input class="form-input" type="text" id="r-name" placeholder="e.g. Karthik" required />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Provider</label>
+            <select class="form-input" id="r-provider">
+              <option>Jio</option><option>Airtel</option><option>BSNL</option>
+              <option>Vi</option><option>Netflix</option><option>Prime</option>
+              <option>Hotstar</option><option>Spotify</option><option>ChatGPT</option><option>Other</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Amount (₹)</label>
+            <input class="form-input" type="number" id="r-amount" placeholder="299" required />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Validity (days)</label>
+            <input class="form-input" type="number" id="r-validity" placeholder="84" />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Recharge Date</label>
+            <input class="form-input" type="date" id="r-date" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Expiry Date</label>
+            <input class="form-input" type="date" id="r-expiry" readonly placeholder="Auto" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Mobile Number</label>
+          <input class="form-input" type="tel" id="r-mobile" placeholder="+91 98765 43210" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Notes</label>
+          <input class="form-input" type="text" id="r-notes" placeholder="Optional notes" />
+        </div>
+        <div class="form-group">
+          <label class="form-check-label">
+            <input type="checkbox" id="r-autorenew" /> Auto-renew reminder
+          </label>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-outline" onclick="closeModal('add-recharge')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Add Chit Fund Modal -->
+  <div class="modal-overlay" id="modal-add-chit" role="dialog" aria-modal="true" aria-label="Add chit fund">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <h2 class="modal-title">Add Chit Fund</h2>
+      <form id="form-chit" novalidate>
+        <div class="form-group">
+          <label class="form-label">Chit Name</label>
+          <input class="form-input" type="text" id="c-name" placeholder="e.g. Village Chit" required />
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Total Value (₹)</label>
+            <input class="form-input" type="number" id="c-value" placeholder="200000" required />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Members</label>
+            <input class="form-input" type="number" id="c-members" placeholder="20" required />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Monthly (₹)</label>
+            <input class="form-input" type="number" id="c-monthly" placeholder="10000" required />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Duration (months)</label>
+            <input class="form-input" type="number" id="c-duration" placeholder="20" required />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Commission Type</label>
+            <select class="form-input" id="c-comm-type">
+              <option value="percent">Percentage</option>
+              <option value="fixed">Fixed Amount</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Commission Value</label>
+            <input class="form-input" type="number" id="c-comm-val" placeholder="5" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Start Date</label>
+          <input class="form-input" type="date" id="c-start" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Notes</label>
+          <input class="form-input" type="text" id="c-notes" placeholder="Optional" />
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-outline" onclick="closeModal('add-chit')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Chit</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Add Expense Modal -->
+  <div class="modal-overlay" id="modal-add-expense" role="dialog" aria-modal="true" aria-label="Add transaction">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <h2 class="modal-title">Add Transaction</h2>
+      <form id="form-expense" novalidate>
+        <div class="toggle-type" id="txn-type-toggle">
+          <button type="button" class="toggle-btn active" data-type="expense">Expense</button>
+          <button type="button" class="toggle-btn" data-type="income">Income</button>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Amount (₹)</label>
+            <input class="form-input" type="number" id="e-amount" placeholder="0" required />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Date</label>
+            <input class="form-input" type="date" id="e-date" required />
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Category</label>
+          <select class="form-input" id="e-category">
+            <optgroup label="Expenses">
+              <option>Food</option><option>Travel</option><option>Shopping</option>
+              <option>Bills</option><option>Fuel</option><option>Medical</option>
+              <option>Entertainment</option><option>Other</option>
+            </optgroup>
+            <optgroup label="Income">
+              <option>Salary</option><option>Freelancing</option><option>Business</option>
+              <option>Interest</option><option>Other Income</option>
+            </optgroup>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Description</label>
+          <input class="form-input" type="text" id="e-desc" placeholder="e.g. Grocery shopping" required />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Payment Mode</label>
+          <select class="form-input" id="e-mode">
+            <option>UPI</option><option>Cash</option><option>Card</option>
+            <option>Net Banking</option><option>Auto-debit</option>
+          </select>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-outline" onclick="closeModal('add-expense')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Bid Simulator Modal -->
+  <div class="modal-overlay" id="modal-simulate" role="dialog" aria-modal="true" aria-label="Bid simulator">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <h2 class="modal-title">Bid Simulator</h2>
+      <div class="form-group">
+        <label class="form-label">Chit Fund</label>
+        <select class="form-input" id="sim-chit" onchange="calcSim()">
+          <option value="family">Family Chit — ₹2,00,000 · 20 months</option>
+          <option value="office">Office Chit — ₹3,00,000 · 25 months</option>
+          <option value="friends">Friends Chit — ₹1,00,000 · 10 months</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Month to take chit</label>
+        <input class="form-input" type="range" id="sim-month" min="1" max="20" value="4" oninput="updateSimMonth(this);calcSim()" />
+        <div class="range-labels"><span>Month 1</span><span id="sim-month-val">Month 4</span><span>Month 20</span></div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Bid Discount Amount (₹)</label>
+        <input class="form-input" type="number" id="sim-bid" value="15000" oninput="calcSim()" placeholder="15000" />
+      </div>
+      <div class="sim-result" id="sim-output">
+        <div class="sim-row"><span>Chit value</span><span id="s-val">₹2,00,000</span></div>
+        <div class="sim-row"><span>Amount you receive</span><span id="s-recv">₹1,85,000</span></div>
+        <div class="sim-row"><span>Paid till that month</span><span id="s-paid">₹40,000</span></div>
+        <div class="sim-row"><span>Future payments (full)</span><span id="s-future">₹1,60,000</span></div>
+        <div class="sim-row"><span>Dividends earned</span><span id="s-divs">₹3,200</span></div>
+        <div class="sim-total">
+          <span>Net Profit / Loss</span>
+          <span id="s-net" class="pos">+₹—</span>
+        </div>
+      </div>
+      <div class="sim-guide" id="sim-guide"></div>
+      <button class="btn btn-primary" style="width:100%;margin-top:14px" onclick="closeModal('simulate')">Done</button>
+    </div>
+  </div>
+
+  <!-- Add Auction Modal -->
+  <div class="modal-overlay" id="modal-add-auction" role="dialog" aria-modal="true" aria-label="Add auction entry">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <h2 class="modal-title">Add Auction Entry</h2>
+      <form id="form-auction" novalidate>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Month Number</label>
+            <input class="form-input" type="number" id="a-month" placeholder="4" required />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Winner Name</label>
+            <input class="form-input" type="text" id="a-winner" placeholder="Ramesh" required />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Bid Discount (₹)</label>
+            <input class="form-input" type="number" id="a-bid" placeholder="18000" oninput="calcAuction()" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Agent Commission (₹)</label>
+            <input class="form-input" type="number" id="a-comm" placeholder="5000" oninput="calcAuction()" />
+          </div>
+        </div>
+        <div class="sim-result" id="auction-calc" style="margin-top:0;margin-bottom:14px">
+          <div class="sim-row"><span>Dividend Pool</span><span id="a-pool">₹—</span></div>
+          <div class="sim-row"><span>Dividend Per Member</span><span id="a-per">₹—</span></div>
+          <div class="sim-row"><span>Your Actual Payable</span><span id="a-payable">₹—</span></div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Payment Date</label>
+          <input class="form-input" type="date" id="a-date" />
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-outline" onclick="closeModal('add-auction')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Auction</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="js/data.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/charts.js"></script>
+  <script src="js/modals.js"></script>
+</body>
+</html>
