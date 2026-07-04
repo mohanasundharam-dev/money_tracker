@@ -1,0 +1,28 @@
+{
+  "background_color": "#ffffff",
+  "description": "My personal portfolio website",
+  "dir": "ltr",
+  "display": "standalone",
+  "name": "My Portfolio",
+  "orientation": "portrait",
+  "scope": "/",
+  "short_name": "Portfolio",
+  "start_url": "/",
+  "theme_color": "#2563eb",
+  "icons": [
+    {
+      "src": "https://mohanasundharam.vercel.app/assests/images/Fav-icon.png",
+      "type": "image/png",
+      "sizes": "1177x1177",
+      "isSquare": true,
+      "isPng": true,
+      "isWebp": false,
+      "isJpg": false,
+      "width": 1177,
+      "is512x512": false,
+      "is256x256": false,
+      "is192x192": false
+    }
+  ],
+  "id": "https://mohanasundharam.vercel.app/"
+}
